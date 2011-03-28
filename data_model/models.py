@@ -1,11 +1,21 @@
 from django.db import models
 
+class Project(models.Model):
+    name = models.CharField(u'Name', max_length=255)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
 class Entity(models.Model):
+    project = models.ForeignKey(Project, verbose_name=u'Project', related_name='entities')
     name = models.CharField(u'Name', max_length=255)
     related_entities = models.ManyToManyField('self', verbose_name=u'Related Entities', blank=True, null=True)
     
     def __unicode__(self):
-        return u"%s" % (self.name)
+        return u"%s | %s" % (unicode(self.project), self.name)
+    
+    class Meta:
+        verbose_name, verbose_name_plural = (u'Entity',u'Entities')
 
 class Type(models.Model):
     description = models.CharField(u'Description', max_length=255, unique=True)

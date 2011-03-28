@@ -34,7 +34,24 @@ class EntityTestCase(unittest.TestCase):
         self.instance_of_otherentity = get(Entity)
         self.instance_of_entity = get(Entity, related_entities=[F(), F(), self.instance_of_otherentity, F()])
 
-    def testCreationAndRelationship(self):
-        self.assertEqual(Entity.__unicode__(self.instance_of_entity), "%s" % (self.instance_of_entity.name))
+    def testCreation(self):
+        self.assertIsNotNone(self.instance_of_entity.project)
+        self.assertEqual(Entity.__unicode__(self.instance_of_entity), "%s | %s" % (unicode(self.instance_of_entity.project), self.instance_of_entity.name))
+
+    def testRelationship(self):
         self.assertEqual(len(self.instance_of_entity.related_entities.all()), 4)
         self.assertEqual(len(self.instance_of_otherentity.related_entities.all()), 1)
+
+class ProjectTestCase(unittest.TestCase):
+    def setUp(self):
+        self.instance_of_project = get(Project)
+        a = get(Entity, project=self.instance_of_project)
+        b = get(Entity, project=self.instance_of_project)
+        c = get(Entity, project=self.instance_of_project)
+        d = get(Entity, project=self.instance_of_project)
+
+    def testCreation(self):
+        self.assertEqual(Project.__unicode__(self.instance_of_project), "%s" % (self.instance_of_project.name))
+
+    def testRelationship(self):
+        self.assertEqual(self.instance_of_project.entities.count(), 4)
