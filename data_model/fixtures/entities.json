@@ -1,0 +1,32 @@
+[
+    {
+        "pk": 1, 
+        "model": "data_model.entity", 
+        "fields": {
+            "name": "product", 
+            "related_entities": []
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "data_model.entity", 
+        "fields": {
+            "name": "supplier", 
+            "related_entities": []
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "data_model.type", 
+        "fields": {
+            "description": "integer"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "data_model.type", 
+        "fields": {
+            "description": "char"
+        }
+    }
+]
