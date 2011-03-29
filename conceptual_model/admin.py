@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ownertrip.data_model.models import *
+from ownertrip.conceptual_model.models import *
 
 class EntityFieldInline(admin.StackedInline):
     model = EntityField

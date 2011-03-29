@@ -1,6 +1,6 @@
 from django.utils import unittest
 from django_dynamic_fixture import new, get, DynamicFixture as F, print_field_values, BadDataError
-from ownertrip.data_model.models import *
+from ownertrip.conceptual_model.models import *
 
 class TypeTestCase(unittest.TestCase):
     def setUp(self):
@@ -41,17 +41,3 @@ class EntityTestCase(unittest.TestCase):
     def testRelationship(self):
         self.assertEqual(len(self.instance_of_entity.related_entities.all()), 4)
         self.assertEqual(len(self.instance_of_otherentity.related_entities.all()), 1)
-
-class ProjectTestCase(unittest.TestCase):
-    def setUp(self):
-        self.instance_of_project = get(Project)
-        a = get(Entity, project=self.instance_of_project)
-        b = get(Entity, project=self.instance_of_project)
-        c = get(Entity, project=self.instance_of_project)
-        d = get(Entity, project=self.instance_of_project)
-
-    def testCreation(self):
-        self.assertEqual(Project.__unicode__(self.instance_of_project), "%s" % (self.instance_of_project.name))
-
-    def testRelationship(self):
-        self.assertEqual(self.instance_of_project.entities.count(), 4)

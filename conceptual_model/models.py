@@ -1,10 +1,5 @@
 from django.db import models
-
-class Project(models.Model):
-    name = models.CharField(u'Name', max_length=255)
-
-    def __unicode__(self):
-        return u"%s" % (self.name)
+from ownertrip.general.models import Project
 
 class Entity(models.Model):
     project = models.ForeignKey(Project, verbose_name=u'Project', related_name='entities')
