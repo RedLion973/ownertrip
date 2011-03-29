@@ -122,7 +122,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'ownertrip.data_model',
+    'ownertrip.general',
+    'ownertrip.conceptual_model',
 )
 
 # A sample logging configuration. The only tangible logging
