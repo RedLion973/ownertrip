@@ -7,7 +7,7 @@ class Entity(models.Model):
     related_entities = models.ManyToManyField('self', verbose_name=u'Related Entities', blank=True, null=True)
     
     def __unicode__(self):
-        return u"%s | %s" % (unicode(self.project), self.name)
+        return u"%s" % (self.name)
     
     class Meta:
         verbose_name, verbose_name_plural = (u'Entity',u'Entities')
@@ -19,7 +19,7 @@ class Type(models.Model):
         return u"%s" % (self.description)
 
 class EntityField(models.Model):
-    entity = models.ForeignKey(Entity, verbose_name=u'Entity')
+    entity = models.ForeignKey(Entity, verbose_name=u'Entity', related_name='fields')
     name = models.CharField(u'Name', max_length=255)
     type = models.ForeignKey(Type, verbose_name=u'Type')
     size = models.PositiveIntegerField(u'Size')
@@ -34,4 +34,5 @@ class EntityField(models.Model):
     def __unicode__(self):
         return u"%s %s(%d) | %s" % (self.name, unicode(self.type).upper(), self.size, self.print_is_null())
 
-
+    class Meta:
+        verbose_name, verbose_name_plural = (u'Field',u'Fields')

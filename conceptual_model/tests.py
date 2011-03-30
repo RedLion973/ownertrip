@@ -31,13 +31,29 @@ class EntityFieldTestCase(unittest.TestCase):
 
 class EntityTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_otherentity = get(Entity)
-        self.instance_of_entity = get(Entity, related_entities=[F(), F(), self.instance_of_otherentity, F()])
+        self.instance_of_entityA = new(Entity, description='some_description', fields=5)
+        self.instance_of_entityB = self.instance_of_entityA
+        self.instance_of_entityB.project = get(Project)
+        self.instance_of_entityC = self.instance_of_entityA
+        self.instance_of_entityA.save()
+        self.instance_of_entityD = get(Entity, related_entities=[F(), F(), self.instance_of_entityA])
 
-    def testCreation(self):
-        self.assertIsNotNone(self.instance_of_entity.project)
-        self.assertEqual(Entity.__unicode__(self.instance_of_entity), "%s | %s" % (unicode(self.instance_of_entity.project), self.instance_of_entity.name))
+    def testFieldsAndRelationships(self):
+        self.assertIsNotNone(self.instance_of_entityA.project, 'not related to a project')
+        self.assertIsNotNone(self.instance_of_entityA.name, (entity name is not set')
+        self.assertEqual(self.instance_of_entityA.description, 'some_description')
+        self.assertEqual(self.instance_of_entityA.related_entities.count(), 1)
+        self.assertEqual(self.instance_of_entityD.related_entities.count(), 3)
+        self.assertEqual(self.instance_of_entityD.fields.count(), 5)
 
-    def testRelationship(self):
-        self.assertEqual(len(self.instance_of_entity.related_entities.all()), 4)
-        self.assertEqual(len(self.instance_of_otherentity.related_entities.all()), 1)
+    def testUniqueness(self):
+        try:
+            self.instance_of_entityB.save()
+        except:
+            self.assertTrue(False, 'names are unique whatever the project')
+        with self.assertRaises(BadDataError, 'names are not unique inside a project'):
+            self.instance_of_entityC.save()
+
+    def testPrint(self):
+        self.instance_of_entity.name = 'entity'
+        self.assertEqual(Entity.__unicode__(self.instance_of_entity), "entity")

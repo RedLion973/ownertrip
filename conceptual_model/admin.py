@@ -8,5 +8,4 @@ class EntityAdmin(admin.ModelAdmin):
     inlines = [EntityFieldInline]
 
 admin.site.register(Type)
-admin.site.register(Project)
 admin.site.register(Entity, EntityAdmin)
