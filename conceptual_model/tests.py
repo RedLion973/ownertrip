@@ -4,56 +4,78 @@ from ownertrip.conceptual_model.models import *
 
 class TypeTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_type1 = get(Type)
-        self.instance_of_type2 = get(Type)
+        self.instance_of_type = get(Type, description="some_type")
 
-    def testCreation(self):
-        self.assertEqual(Type.__unicode__(self.instance_of_type1), "%s" % (self.instance_of_type1.description))
+    def tearDown(self):
+        Type.objects.get(pk=self.instance_of_type.pk).delete()
+
+    def testField(self):
+        self.assertEqual(self.instance_of_type.description, "some_type")
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            t = get(Type, description=None)
+
+    def testUniqueness(self):
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            t = get(Type, description="some_type")
     
-    def testDescriptionUniqueness(self):
-        self.assertNotEqual(self.instance_of_type1.description, self.instance_of_type2.description)
-        with self.assertRaises(BadDataError):
-            self.instance_of_type3 = get(Type, description=self.instance_of_type1.description)
+    def testPrint(self):
+        self.assertEqual(Type.__unicode__(self.instance_of_type), "some_type")
+
 
 class EntityFieldTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_entityfield = get(EntityField)
-        type = get(Type)
-        self.instance_of_otherentityfield = get(EntityField, type=type, size=11)
+        self.instance_of_field = get(EntityField, name="some_field", size=5, null=0)
 
-    def testCreation(self):
-        self.assertIsNotNone(self.instance_of_entityfield.name)
-        self.assertIsNotNone(self.instance_of_entityfield.type)
-        self.assertTrue(self.instance_of_entityfield.size > 0)
-
-    def testUnicode(self):
-        self.assertEqual(EntityField.__unicode__(self.instance_of_otherentityfield), "%s %s(%d) | %s" % (self.instance_of_otherentityfield.name, unicode(self.instance_of_otherentityfield.type).upper(), self.instance_of_otherentityfield.size, self.instance_of_otherentityfield.print_is_null()))
-
-class EntityTestCase(unittest.TestCase):
-    def setUp(self):
-        self.instance_of_entityA = new(Entity, description='some_description', fields=5)
-        self.instance_of_entityB = self.instance_of_entityA
-        self.instance_of_entityB.project = get(Project)
-        self.instance_of_entityC = self.instance_of_entityA
-        self.instance_of_entityA.save()
-        self.instance_of_entityD = get(Entity, related_entities=[F(), F(), self.instance_of_entityA])
+    def tearDown(self):
+        EntityField.objects.get(pk=self.instance_of_field.pk).delete()
 
     def testFieldsAndRelationships(self):
-        self.assertIsNotNone(self.instance_of_entityA.project, 'not related to a project')
-        self.assertIsNotNone(self.instance_of_entityA.name, (entity name is not set')
-        self.assertEqual(self.instance_of_entityA.description, 'some_description')
-        self.assertEqual(self.instance_of_entityA.related_entities.count(), 1)
-        self.assertEqual(self.instance_of_entityD.related_entities.count(), 3)
-        self.assertEqual(self.instance_of_entityD.fields.count(), 5)
+        self.assertIsNotNone(self.instance_of_field.entity, 'not related to an entity')
+        self.assertIsNotNone(self.instance_of_field.type, 'field type is not set')
+        self.assertIsNotNone(self.instance_of_field.size, 'field size is not set')
+        self.assertEqual(self.instance_of_field.name, "some_field")
+        self.assertEqual(self.instance_of_field.null, 0)
 
     def testUniqueness(self):
         try:
-            self.instance_of_entityB.save()
+            F = get(EntityField, name="some_field")
         except:
-            self.assertTrue(False, 'names are unique whatever the project')
-        with self.assertRaises(BadDataError, 'names are not unique inside a project'):
-            self.instance_of_entityC.save()
+            self.assertTrue(False, 'name is unique whatever the entity')
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            F = get(EntityField, name="some_field", entity=self.instance_of_field.entity)
 
     def testPrint(self):
-        self.instance_of_entity.name = 'entity'
-        self.assertEqual(Entity.__unicode__(self.instance_of_entity), "entity")
+        self.assertEqual(EntityField.__unicode__(self.instance_of_field), "some_field " + unicode(self.instance_of_field.type).upper() + "(5) | not null")
+
+class EntityTestCase(unittest.TestCase):
+    def setUp(self):
+	self.instance_of_entityA = get(Entity, name="foo", description='some_description')
+        self.instance_of_entityB = get(Entity, related_entities=[F(), F(), self.instance_of_entityA])
+
+    def tearDown(self):
+        Entity.objects.get(pk=self.instance_of_entityA.pk).delete()
+        Entity.objects.get(pk=self.instance_of_entityB.pk).delete()
+
+    def testFieldsAndRelationships(self):
+        A = get(EntityField, entity=self.instance_of_entityA)
+        B = get(EntityField, entity=self.instance_of_entityA)
+        C = get(EntityField, entity=self.instance_of_entityA)
+        D = get(EntityField, entity=self.instance_of_entityA)
+        E = get(EntityField, entity=self.instance_of_entityA)
+        self.assertIsNotNone(self.instance_of_entityA.project, 'not related to a project')
+        self.assertIsNotNone(self.instance_of_entityA.name, 'entity name is not set')
+        self.assertEqual(self.instance_of_entityA.description, 'some_description')
+        self.assertEqual(self.instance_of_entityA.fields.count(), 5)
+        self.assertEqual(self.instance_of_entityA.related_entities.count(), 1)
+        self.assertEqual(self.instance_of_entityB.related_entities.count(), 3)
+
+    def testUniqueness(self):
+        try:
+            E = get(Entity, name="foo", description='some_description', fields=5)
+        except:
+            self.assertTrue(False, 'name is unique whatever the project')
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            E = get(Entity, name="foo", description='some_description', fields=5, project=self.instance_of_entityA.project)
+
+    def testPrint(self):
+        self.assertEqual(Entity.__unicode__(self.instance_of_entityA), "foo")

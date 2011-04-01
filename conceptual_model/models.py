@@ -4,6 +4,7 @@ from ownertrip.general.models import Project
 class Entity(models.Model):
     project = models.ForeignKey(Project, verbose_name=u'Project', related_name='entities')
     name = models.CharField(u'Name', max_length=255)
+    description = models.TextField(u'Description')
     related_entities = models.ManyToManyField('self', verbose_name=u'Related Entities', blank=True, null=True)
     
     def __unicode__(self):
@@ -11,6 +12,7 @@ class Entity(models.Model):
     
     class Meta:
         verbose_name, verbose_name_plural = (u'Entity',u'Entities')
+        unique_together = ("project", "name")
 
 class Type(models.Model):
     description = models.CharField(u'Description', max_length=255, unique=True)
@@ -36,3 +38,4 @@ class EntityField(models.Model):
 
     class Meta:
         verbose_name, verbose_name_plural = (u'Field',u'Fields')
+        unique_together = ("entity", "name")

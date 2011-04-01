@@ -6,11 +6,9 @@ from ownertrip.specs.models import *
 
 class ModuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_moduleA = new(Module, number=1, name='some_name')
-        self.instance_of_moduleB = self.instance_of_moduleA
-        self.instance_of_moduleB.project = get(Project)
-        self.instance_of_moduleC = self.instance_of_moduleA
-        self.instance_of_moduleA.save()
+        self.instance_of_moduleA = get(Module, number=1, name='some_name')
+        self.instance_of_moduleB = new(Module, number=1, name='some_name', project=F())
+        self.instance_of_moduleC = new(Module, number=1, name='some_name', project=self.instance_of_moduleA.project)
 
     def testFieldsAndRelationships(self):
         self.assertIsNotNone(self.instance_of_moduleA.project, 'not related to a project')
@@ -22,8 +20,8 @@ class ModuleTestCase(unittest.TestCase):
         try:
             self.instance_of_moduleB.save()
         except:
-            self.assertTrue(False, 'numbers & names are unique whatever the project')
-        with self.assertRaises(BadDataError, 'numbers & names are not unique inside a project'):
+            self.assertTrue(False, 'number & name are unique whatever the project')
+        with self.assertRaises(BadDataError, 'number & name are not unique inside a project'):
             self.instance_of_moduleC.save()
     
     def testPrint(self):
@@ -39,11 +37,9 @@ class FunctionTestCase(unittest.TestCase):
     def setUp(self):
         e1 = get(Entity, fields=5)
         e2 = get(Entity, fields=10)
-        self.instance_of_functionalityA = new(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name')
-        self.instance_of_functionalityB = self.instance_of_functionalityA
-        self.instance_of_functionalityB.module = get(Module)
-        self.instance_of_functionalityC = self.instance_of_functionalityA
-        self.instance_of_functionalityA.save()
+        self.instance_of_functionalityA = get(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name')
+        self.instance_of_functionalityB = new(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name', module=F())
+        self.instance_of_functionalityC = new(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name', module=self.instance_of_functionalityA.module)
 
     def testFieldsAndRelationships(self):
         self.assertIsNotNone(self.instance_of_functionalityA.module, 'not related to a module')
@@ -59,8 +55,8 @@ class FunctionTestCase(unittest.TestCase):
         try:
             self.instance_of_functionalityB.save()
         except:
-            self.assertTrue(False, 'numbers & names are unique whatever the module')
-        with self.assertRaises(BadDataError, 'numbers & names are not unique inside a module'):
+            self.assertTrue(False, 'number & name are unique whatever the module')
+        with self.assertRaises(BadDataError, 'number & name are not unique inside a module'):
             self.instance_of_functionalityC.save()
 
     def testPrint(self):
@@ -75,27 +71,25 @@ class FunctionTestCase(unittest.TestCase):
 
 class BusinessRuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_businessruleA = new(BusinessRule)
-        self.instance_of_businessruleB = self.instance_of_businessruleA
-        self.instance_of_businessruleB.functionality = get(Functionality)
-        self.instance_of_businessruleC = self.instance_of_businessruleA
-        self.instance_of_businessruleA.save()
+        self.instance_of_businessruleA = get(BusinessRule, number=1)
+        self.instance_of_businessruleB = new(BusinessRule, number=1, functionality=F())
+        self.instance_of_businessruleC = new(BusinessRule, number=1, functionality=self.instance_of_businessruleA.functionality)
 
     def testFieldsAndRelationships(self):
         self.assertIsNotNone(self.instance_of_businessruleA.functionality, 'not related to a functionality')
         self.assertIsNotNone(self.instance_of_businessruleA.number, 'business rule number not set')
+        self.assertEqual(self.instance_of_businessruleA.number, 1)
         self.assertIsNotNone(self.instance_of_businessruleA.description, 'business rule description not set')
 
     def testUniqueness(self):
         try:
             self.instance_of_businessruleB.save()
         except:
-            self.assertTrue(False, 'numbers are unique whatever the functionality')
-        with self.assertRaises(BadDataError, 'numbers are not unique inside a functionality'):
+            self.assertTrue(False, 'number is unique whatever the functionality')
+        with self.assertRaises(BadDataError, 'number is not unique inside a functionality'):
             self.instance_of_businessruleC.save()
 
     def testPrint(self):
-        self.instance_of_businessruleA.number = 1
         self.instance_of_businessruleA.functionality.number = '5'
         self.instance_of_businessruleA.functionality.module.number = '2'
         self.assertEqual(self.instance_of_businessruleA.print_label(), "M02 F05 - RG01")
@@ -105,11 +99,9 @@ class BusinessRuleTestCase(unittest.TestCase):
 
 class OperatingRuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_operatingruleA = new(OperatingRule)
-        self.instance_of_operatingruleB = self.instance_of_operatingruleA
-        self.instance_of_operatingruleB.functionality = get(Functionality)
-        self.instance_of_operatingruleC = self.instance_of_operatingruleA
-        self.instance_of_operatingruleA.save()
+        self.instance_of_operatingruleA = get(OperatingRule, number=1)
+        self.instance_of_operatingruleB = new(OperatingRule, number=1, functionality=F())
+        self.instance_of_operatingruleC = new(OperatingRule, number=1, functionality=self.instance_of_operatingruleA.functionality)
 
     def testFieldsAndRelationships(self):
         self.assertIsNotNone(self.instance_of_operatingruleA.functionality, 'not related to a functionality')
@@ -120,12 +112,11 @@ class OperatingRuleTestCase(unittest.TestCase):
         try:
             self.instance_of_operatingruleB.save()
         except:
-            self.assertTrue(False, 'numbers are unique whatever the functionality')
-        with self.assertRaises(BadDataError, 'numbers are not unique inside a functionality'):
+            self.assertTrue(False, 'number is unique whatever the functionality')
+        with self.assertRaises(BadDataError, 'number is not unique inside a functionality'):
             self.instance_of_operatingruleC.save()
 
     def testPrint(self):
-        self.instance_of_operatingruleA.number = 1
         self.instance_of_operatingruleA.functionality.number = '5'
         self.instance_of_operatingruleA.functionality.module.number = '2'
         self.assertEqual(self.instance_of_operatingruleA.print_label(), "M02 F05 - RF01")
