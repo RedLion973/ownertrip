@@ -6,32 +6,34 @@ from ownertrip.specs.models import *
 
 class ModuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_moduleA = get(Module, number=1, name='some_name')
-        self.instance_of_moduleB = new(Module, number=1, name='some_name', project=F())
-        self.instance_of_moduleC = new(Module, number=1, name='some_name', project=self.instance_of_moduleA.project)
+        self.instance_of_module = get(Module, number=1, name='some_name')
+
+    def tearDown(self):
+        Module.objects.get(pk=self.instance_of_module.pk).delete()
 
     def testFieldsAndRelationships(self):
-        self.assertIsNotNone(self.instance_of_moduleA.project, 'not related to a project')
-        self.assertEqual(self.instance_of_moduleA.number, 1)
-        self.assertEqual(self.instance_of_moduleA.name, 'some_name')
-        self.assertIsNotNone(self.instance_of_moduleA.description, 'module description not set')
+        self.assertIsNotNone(self.instance_of_module.project, 'not related to a project')
+        self.assertEqual(self.instance_of_module.number, 1)
+        self.assertEqual(self.instance_of_module.name, 'some_name')
+        self.assertIsNotNone(self.instance_of_module.description, 'module description not set')
 
     def testUniqueness(self):
         try:
-            self.instance_of_moduleB.save()
+            M = get(Module, number=1, name='some_name')
         except:
             self.assertTrue(False, 'number & name are unique whatever the project')
-        with self.assertRaises(BadDataError, 'number & name are not unique inside a project'):
-            self.instance_of_moduleC.save()
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            M = get(Module, number=1, name='some_name', project=self.instance_of_module.project)
     
     def testPrint(self):
-        self.assertEqual(self.instance_of_moduleA.print_label(), "M01 - some_name")
-        self.instance_of_moduleA.number = 99
-        self.instance_of_moduleA.name = 'other_name'
-        self.assertEqual(self.instance_of_moduleA.print_label(), "M99 - other_name")
-        self.instance_of_moduleA.number = 289
-        self.assertEqual(self.instance_of_moduleA.print_label(), "M289 - other_name")
-        self.assertEqual(self.instance_of_moduleA.print_index(), "M289")
+        self.assertEqual(Module.__unicode__(self.instance_of_module), "some_name")
+        self.assertEqual(self.instance_of_module.print_label(), "M01 - some_name")
+        self.instance_of_module.number = 99
+        self.instance_of_module.name = 'other_name'
+        self.assertEqual(self.instance_of_module.print_label(), "M99 - other_name")
+        self.instance_of_module.number = 289
+        self.assertEqual(self.instance_of_module.print_label(), "M289 - other_name")
+        self.assertEqual(self.instance_of_module.print_index(), "M289")
 
 class FunctionTestCase(unittest.TestCase):
     def setUp(self):

@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'ownertrip.general',
     'ownertrip.conceptual_model',
+    'ownertrip.specs',
 )
 
 # A sample logging configuration. The only tangible logging
