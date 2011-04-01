@@ -35,92 +35,96 @@ class ModuleTestCase(unittest.TestCase):
         self.assertEqual(self.instance_of_module.print_label(), "M289 - other_name")
         self.assertEqual(self.instance_of_module.print_index(), "M289")
 
-class FunctionTestCase(unittest.TestCase):
+class FunctionalityTestCase(unittest.TestCase):
     def setUp(self):
-        e1 = get(Entity, fields=5)
-        e2 = get(Entity, fields=10)
-        self.instance_of_functionalityA = get(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name')
-        self.instance_of_functionalityB = new(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name', module=F())
-        self.instance_of_functionalityC = new(Functionality, entities=[e1, e2], outputs='something_out', inputs=7, number=1, name='some_name', module=self.instance_of_functionalityA.module)
+        self.instance_of_functionality = get(Functionality, outputs='something_out', inputs=7, number=1, name='some_name')
+
+    def tearDown(self):
+        Functionality.objects.get(pk=self.instance_of_functionality.pk).delete()
 
     def testFieldsAndRelationships(self):
-        self.assertIsNotNone(self.instance_of_functionalityA.module, 'not related to a module')
-        self.assertEqual(self.instance_of_functionalityA.number, 1)
-        self.assertEqual(self.instance_of_functionalityA.name, 'some_name')
-        self.assertIsNotNone(self.instance_of_functionalityA.description, 'functionality description not set')
-        self.assertEqual(self.instance_of_functionalityA.entities.count(), 2, 'number of entities related to the functionality is different from 2')
-        self.assertEqual(self.instance_of_functionalityA.outputs, "something_out", 'functionality outputs is not something_out')
-        for input in self.instance_of_functionalityA.inputs:
-            self.assertIn(input.entity, self.instance_of_functionalityA.entities)
+        self.assertIsNotNone(self.instance_of_functionality.module, 'not related to a module')
+        self.assertEqual(self.instance_of_functionality.number, 1)
+        self.assertEqual(self.instance_of_functionality.name, 'some_name')
+        self.assertIsNotNone(self.instance_of_functionality.description, 'functionality description not set')
+        self.assertEqual(self.instance_of_functionality.outputs, "something_out", 'functionality outputs is not something_out')
+        self.assertEqual(self.instance_of_functionality.inputs.count(), 7, 'number of inputs to the functionality is different from 7')
 
     def testUniqueness(self):
         try:
-            self.instance_of_functionalityB.save()
+            F = get(Functionality, number=1, name='some_name')
         except:
             self.assertTrue(False, 'number & name are unique whatever the module')
-        with self.assertRaises(BadDataError, 'number & name are not unique inside a module'):
-            self.instance_of_functionalityC.save()
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            F = get(Functionality, number=1, name='some_name', module=self.instance_of_functionality.module)
 
     def testPrint(self):
-        self.assertEqual(self.instance_of_functionalityA.print_label(), "F01 - some_name")
-        self.instance_of_functionalityA.number = 99
-        self.instance_of_functionalityA.name = 'other_name'
-        self.instance_of_functionalityA.module.number = '55'
-        self.assertEqual(self.instance_of_functionalityA.print_full_label(), "M55 F99 - other_name")
-        self.instance_of_functionalityA.number = 8
-        self.assertEqual(self.instance_of_functionalityA.print_full_label(), "M55 F08 - other_name")
-        self.assertEqual(self.instance_of_functionalityA.print_index(), "M55 F08")
+        self.assertEqual(Functionality.__unicode__(self.instance_of_functionality), "some_name")
+        self.assertEqual(self.instance_of_functionality.print_label(), "F01 - some_name")
+        self.instance_of_functionality.number = 99
+        self.instance_of_functionality.name = 'other_name'
+        self.instance_of_functionality.module.number = '55'
+        self.assertEqual(self.instance_of_functionality.print_full_label(), "M55 F99 - other_name")
+        self.instance_of_functionality.number = 8
+        self.assertEqual(self.instance_of_functionality.print_full_label(), "M55 F08 - other_name")
+        self.assertEqual(self.instance_of_functionality.print_index(), "M55 F08")
 
 class BusinessRuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_businessruleA = get(BusinessRule, number=1)
-        self.instance_of_businessruleB = new(BusinessRule, number=1, functionality=F())
-        self.instance_of_businessruleC = new(BusinessRule, number=1, functionality=self.instance_of_businessruleA.functionality)
+        self.instance_of_businessrule = get(BusinessRule, number=1, functionality=F(module=F(project=F()), insputs=3))
+
+    def tearDown(self):
+        BusinessRule.objects.get(pk=self.instance_of_businessrule.pk).delete()
 
     def testFieldsAndRelationships(self):
-        self.assertIsNotNone(self.instance_of_businessruleA.functionality, 'not related to a functionality')
-        self.assertIsNotNone(self.instance_of_businessruleA.number, 'business rule number not set')
-        self.assertEqual(self.instance_of_businessruleA.number, 1)
-        self.assertIsNotNone(self.instance_of_businessruleA.description, 'business rule description not set')
+        self.assertIsNotNone(self.instance_of_businessrule.functionality, 'not related to a functionality')
+        self.assertIsNotNone(self.instance_of_businessrule.number, 'business rule number not set')
+        self.assertEqual(self.instance_of_businessrule.number, 1)
+        self.assertIsNotNone(self.instance_of_businessrule.description, 'business rule description not set')
 
     def testUniqueness(self):
         try:
-            self.instance_of_businessruleB.save()
+            B = get(BusinessRule, number=1)
         except:
             self.assertTrue(False, 'number is unique whatever the functionality')
-        with self.assertRaises(BadDataError, 'number is not unique inside a functionality'):
-            self.instance_of_businessruleC.save()
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            B = get(BusinessRule, number=1, functionality=self.instance_of_businessrule.functionality)
 
     def testPrint(self):
-        self.instance_of_businessruleA.functionality.number = '5'
-        self.instance_of_businessruleA.functionality.module.number = '2'
-        self.assertEqual(self.instance_of_businessruleA.print_label(), "M02 F05 - RG01")
-        self.instance_of_businessruleA.number = 25
-        self.assertEqual(self.instance_of_businessruleA.print_label(), "M02 F05 - RG25")
+        self.instance_of_businessrule.functionality.number = 5
+        self.instance_of_businessrule.functionality.module.number = 2
+        self.assertEqual(self.instance_of_businessrule.print_label(), "M02 F05 - RG01")
+        self.assertEqual(BusinessRule.__unicode__(self.instance_of_businessrule), "M02 F05 - RG01")
+        self.instance_of_businessrule.number = 25
+        self.assertEqual(self.instance_of_businessrule.print_label(), "M02 F05 - RG25")
 
 
 class OperatingRuleTestCase(unittest.TestCase):
     def setUp(self):
-        self.instance_of_operatingruleA = get(OperatingRule, number=1)
-        self.instance_of_operatingruleB = new(OperatingRule, number=1, functionality=F())
-        self.instance_of_operatingruleC = new(OperatingRule, number=1, functionality=self.instance_of_operatingruleA.functionality)
+        self.instance_of_operatingrule = get(OperatingRule, number=1, functionality=F(module=F(project=F()), insputs=3))
+
+    def tearDown(self):
+        OperatingRule.objects.get(pk=self.instance_of_operatingrule.pk).delete()
 
     def testFieldsAndRelationships(self):
-        self.assertIsNotNone(self.instance_of_operatingruleA.functionality, 'not related to a functionality')
-        self.assertIsNotNone(self.instance_of_operatingruleA.number, 'operating rule number not set')
-        self.assertIsNotNone(self.instance_of_operatingruleA.description, 'operating rule description not set')
+        self.assertIsNotNone(self.instance_of_operatingrule.functionality, 'not related to a functionality')
+        self.assertIsNotNone(self.instance_of_operatingrule.number, 'operating rule number not set')
+        self.assertEqual(self.instance_of_operatingrule.number, 1)
+        self.assertIsNotNone(self.instance_of_operatingrule.description, 'operating rule description not set')
 
     def testUniqueness(self):
         try:
-            self.instance_of_operatingruleB.save()
+            B = get(OperatingRule, number=1)
         except:
             self.assertTrue(False, 'number is unique whatever the functionality')
-        with self.assertRaises(BadDataError, 'number is not unique inside a functionality'):
-            self.instance_of_operatingruleC.save()
+        with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
+            B = get(OperatingRule, number=1, functionality=self.instance_of_operatingrule.functionality)
 
     def testPrint(self):
-        self.instance_of_operatingruleA.functionality.number = '5'
-        self.instance_of_operatingruleA.functionality.module.number = '2'
-        self.assertEqual(self.instance_of_operatingruleA.print_label(), "M02 F05 - RF01")
-        self.instance_of_operatingruleA.number = 25
-        self.assertEqual(self.instance_of_operatingruleA.print_label(), "M02 F05 - RF25")
+        self.instance_of_operatingrule.functionality.number = 5
+        self.instance_of_operatingrule.functionality.module.number = 2
+        self.assertEqual(self.instance_of_operatingrule.print_label(), "M02 F05 - RG01")
+        self.assertEqual(OperatingRule.__unicode__(self.instance_of_operatingrule), "M02 F05 - RG01")
+        self.instance_of_operatingrule.number = 25
+        self.assertEqual(self.instance_of_operatingrule.print_label(), "M02 F05 - RG25")
+

@@ -12,11 +12,11 @@ class TypeTestCase(unittest.TestCase):
     def testField(self):
         self.assertEqual(self.instance_of_type.description, "some_type")
         with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
-            t = get(Type, description=None)
+            T = get(Type, description=None)
 
     def testUniqueness(self):
         with self.assertRaises(BadDataError) or self.assertRaises(IntegrityError):
-            t = get(Type, description="some_type")
+            T = get(Type, description="some_type")
     
     def testPrint(self):
         self.assertEqual(Type.__unicode__(self.instance_of_type), "some_type")
@@ -57,11 +57,11 @@ class EntityTestCase(unittest.TestCase):
         Entity.objects.get(pk=self.instance_of_entityB.pk).delete()
 
     def testFieldsAndRelationships(self):
-        A = get(EntityField, entity=self.instance_of_entityA)
-        B = get(EntityField, entity=self.instance_of_entityA)
-        C = get(EntityField, entity=self.instance_of_entityA)
-        D = get(EntityField, entity=self.instance_of_entityA)
-        E = get(EntityField, entity=self.instance_of_entityA)
+        F1 = get(EntityField, entity=self.instance_of_entityA)
+        F2 = get(EntityField, entity=self.instance_of_entityA)
+        F3 = get(EntityField, entity=self.instance_of_entityA)
+        F4 = get(EntityField, entity=self.instance_of_entityA)
+        F5 = get(EntityField, entity=self.instance_of_entityA)
         self.assertIsNotNone(self.instance_of_entityA.project, 'not related to a project')
         self.assertIsNotNone(self.instance_of_entityA.name, 'entity name is not set')
         self.assertEqual(self.instance_of_entityA.description, 'some_description')
