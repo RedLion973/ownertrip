@@ -1,7 +1,9 @@
 {% extends "general/base.html" %}
 
 {% block content %}
-    <h2>Projets</h2>
+    <h2>{{ project.name }}</h2>
+
+    <h3>MCD</h3>
     <ul>
         {% for project in project_list %}
             <li><a href="{{ project.get_absolute_url }}">{{ project.name }}</a></li>
